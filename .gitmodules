@@ -1,0 +1,3 @@
+[submodule "external/definitelyTyped"]
+	path = external/definitelyTyped
+	url = https://github.com/borisyankov/DefinitelyTyped.git
