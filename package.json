@@ -13,7 +13,7 @@
     "main": "lib/jake-typescript",
     "dependencies": {
         "typescript": "0.9.5",
-        "jake": ">= 0.7.2",
+        "jake": ">= 0.7.2"
     },
     "engines": {
         "node": "*"

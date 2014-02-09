@@ -1,4 +1,4 @@
-/// <reference path="../external/definitelyTyped/jake/jake.d.ts" />
+/// <reference path="../typings/jake/jake.d.ts" />
 
 export enum ModuleKind
 {
