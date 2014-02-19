@@ -126,12 +126,12 @@ function executeTsc(name: string, outFiles: string[], commandLine: string): void
 
     var ex: jake.Exec = jake.createExec([cmd]);
 
-    ex.addListener("stdout", output=>
+    ex.addListener("stdout", (output: string) =>
     {
         process.stdout.write(output);
     });
 
-    ex.addListener("stderr", error=>
+    ex.addListener("stderr", (error: string) =>
     {
         process.stderr.write(error);
     });
