@@ -14,7 +14,7 @@ declare module "jake-typescript"
         ES5 = 1,
     }
 
-    export interface CompileOptions extends jake.FileTaskOptions
+    export interface CompileOptions
     {
         generateDeclarationFile?: boolean;
         moduleKind?: ModuleKind;

@@ -1,5 +1,7 @@
 /// <reference path="../typings/jake/jake.d.ts" />
 
+import fs = require("fs");
+
 export enum ModuleKind
 {
     commonjs,
@@ -12,7 +14,7 @@ export enum ESVersion
     ES5
 }
 
-export interface CompileOptions extends jake.FileTaskOptions
+export interface CompileOptions
 {
     generateDeclarationFile?: boolean;
     moduleKind?: ModuleKind;
@@ -90,6 +92,11 @@ function convertOptions(options: CompileOptions): string
         optionString += "--mapRoot " + options.mapRoot + " ";
     }
 
+    if (options.removeComments)
+    {
+        optionString += "--removeComments ";
+    }
+
     if (options.sourceRoot)
     {
         optionString += "--sourceRoot " + options.sourceRoot + " ";
@@ -112,7 +119,7 @@ function convertOptions(options: CompileOptions): string
     return optionString;
 }
 
-function executeTsc(name: string, commandLine: string): void
+function executeTsc(name: string, outFiles: string[], commandLine: string): void
 {
     var cmd = "tsc " + commandLine;
     console.log(cmd + "\n");
@@ -136,6 +143,10 @@ function executeTsc(name: string, commandLine: string): void
 
     ex.addListener("error", () =>
     {
+        outFiles.forEach((outFile: string): void=>
+        {
+            fs.unlinkSync(outFile);
+        });
         console.log("Compilation of " + name + " failed.");
     });
 
@@ -150,8 +161,8 @@ export function singleFile(name: string, prereqs: string[], opts?: CompileOption
 
     commandLine += "--out " + name + " " + sources.join(" ");
 
-    var jakeOptions: jake.FileTaskOptions = { async: opts.async };
-    var task: jake.FileTask = file(name, prereqs, ()=> { executeTsc(name, commandLine); }, jakeOptions);
+    var jakeOptions: jake.FileTaskOptions = { async: true };
+    var task: jake.FileTask = file(name, prereqs, ()=> { executeTsc(name, [name], commandLine); }, jakeOptions);
 
     return task;
 }
@@ -168,13 +179,13 @@ export function batchFiles(name: string, prereqs: string[], opts?: BatchCompileO
 
     commandLine += sources.join(" ");
 
-    var jakeOptions: jake.FileTaskOptions = { async: opts.async };
+    var jakeOptions: jake.FileTaskOptions = { async: true };
     var batchCompileName: string = "batchCompile" + name;
     var batchCompileTask: jake.Task;
     namespace("jake-typescript", ()=>
     {
         desc("A task to do batch TypeScript compilation.");
-        batchCompileTask = task(batchCompileName, ()=> { executeTsc(name, commandLine); }, jakeOptions);
+        batchCompileTask = task(batchCompileName, ()=> { executeTsc(name, sources, commandLine); }, jakeOptions);
     });
 
     var builtFiles: string[] = [];
