@@ -1,18 +1,22 @@
-# jake-typescript -- Jake helpers for TypeScript
+# jake-typescript
 
 Helpers to compile [TypeScript](http://www.typescriptlang.org) using [Jake](https://github.com/mde/jake).
 
-## function batchFiles(name: string, prereqs: string[], opts?: BatchCompileOptions): jake.Task
+## function batchFiles
 
-Compiles a set of TypeScript files. `batchFiles` returns a regular task since it can produce multiple
-file outputs. `prereqs` can contain both TypeScript files and other prerequisites. `opts` indicates
-compile options for the compilation.
+* name: string -- The name of the resulting task.
+* prereqs: string[] -- Task prerequisites. Can contain both TypeScript files and other prerequisites.
+* opts?: BatchCompileOptions - Compile options.
 
-## function singleFile(name: string, prereqs: string[], opts?: CompileOptions): jake.FileTask
+Returns a task that compiles a set of TypeScript files.
 
-Compiles a set of TypeScript files and combines them into a single file. `singleFile` returns a 
-Jake file task that produces `name`. `prereqs` can contain both TypeScript files and other prerequisites.
-`opts` indicates compile options for the compilation.
+## function singleFile
+
+* name: string -- The name of the resulting file.
+* prereqs: string[] -- Task prerequisites. Can contain both TypeScript files and other prerequisites.
+* opts?: BatchCompileOptions - Compile options.
+
+Returns a file task that compiles a set of TypeScript files and combines them into a single file.
 
 ## interface CompileOptions
 
@@ -25,9 +29,11 @@ Jake file task that produces `name`. `prereqs` can contain both TypeScript files
 * mapRoot?: string - The root for the map files.
 * targetVersion?: ESVersion -- The target JS version to use.
 
-## interface BatchCompileOptions extends CompileOptions
+## interface BatchCompileOptions
 
 * outputDirectory?: string -- The output directory for the batch compile.
+
+Extends CompileOptions.
 
 ## enum ModuleKind
 
@@ -38,5 +44,4 @@ Jake file task that produces `name`. `prereqs` can contain both TypeScript files
 
 * ES3
 * ES5
-
 
