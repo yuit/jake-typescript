@@ -36,3 +36,19 @@ file("lib/jake-typescript.js", ["lib", "lib/jake-typescript.ts"], ()=>
 }, { async: true });
 
 task("build", ["lib/jake-typescript.js"]);
+
+npmPublishTask('jake-typescript', function ()
+{
+    this.packageFiles.include([
+        'jakefile.js',
+        'jakefile.ts',
+        'LICENSE',
+        'makejakefile.cmd',
+        'package.json',
+        'README.md',
+        'lib/jake-typescript.d.ts',
+        'lib/jake-typescript.js',
+        'lib/jake-typescript.ts',
+        'typings/**'
+    ]);
+});
