@@ -51,4 +51,6 @@ npmPublishTask('jake-typescript', function ()
         'lib/jake-typescript.ts',
         'typings/**'
     ]);
+    this.needTarGz = true;
+    this.needTarBz2 = true;
 });
