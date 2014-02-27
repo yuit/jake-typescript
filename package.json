@@ -1,18 +1,20 @@
 {
-    "name": "jake-typescript",
-    "version": "0.1.0",
-    "description": "Helpers to compile TypeScript using Jake.",
-    "keywords": [ "jake", "typescript" ],
-    "author": "Paul Vick <paul@panopticoncentral.net> (http://www.panopticoncentral.net)",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/panopticoncentral/jake-typescript.git"
-    },
-    "homepage": "https://github.com/panopticoncentral/jake-typescript",
-    "license": "Apache-2.0",
-    "main": "lib/jake-typescript",
-    "engines": {
-        "node": "*"
-    }
+  "name": "jake-typescript",
+  "version": "0.1.1",
+  "description": "Helpers to compile TypeScript using Jake.",
+  "keywords": [
+    "jake",
+    "typescript"
+  ],
+  "author": "Paul Vick <paul@panopticoncentral.net> (http://www.panopticoncentral.net)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/panopticoncentral/jake-typescript.git"
+  },
+  "homepage": "https://github.com/panopticoncentral/jake-typescript",
+  "license": "Apache-2.0",
+  "main": "lib/jake-typescript",
+  "engines": {
+    "node": "*"
+  }
 }
-
