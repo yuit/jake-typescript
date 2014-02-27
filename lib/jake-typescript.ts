@@ -145,7 +145,10 @@ function executeTsc(name: string, outFiles: string[], commandLine: string): void
     {
         outFiles.forEach((outFile: string): void=>
         {
-            fs.unlinkSync(outFile);
+            if (fs.existsSync(outFile))
+            {
+                fs.unlinkSync(outFile);
+            }
         });
         console.log("Compilation of " + name + " failed.");
     });
