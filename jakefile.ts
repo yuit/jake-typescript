@@ -35,7 +35,7 @@ file("lib/jake-typescript.js", ["lib", "lib/jake-typescript.ts"], ()=>
     ex.run();
 }, { async: true });
 
-task("build", ["lib/jake-typescript.js"]);
+task("default", ["lib/jake-typescript.js"]);
 
 npmPublishTask('jake-typescript', function ()
 {

@@ -119,7 +119,7 @@ function convertOptions(options: CompileOptions): string
     return optionString;
 }
 
-function executeTsc(name: string, outFiles: string[], commandLine: string): void
+function executeTsc(name: string, outFiles: string[], commandLine: string, failure: () => void): void
 {
     var cmd = "tsc " + commandLine;
     console.log(cmd + "\n");
@@ -143,13 +143,7 @@ function executeTsc(name: string, outFiles: string[], commandLine: string): void
 
     ex.addListener("error", () =>
     {
-        outFiles.forEach((outFile: string): void=>
-        {
-            if (fs.existsSync(outFile))
-            {
-                fs.unlinkSync(outFile);
-            }
-        });
+        failure();
         console.log("Compilation of " + name + " failed.");
     });
 
@@ -165,7 +159,18 @@ export function singleFile(name: string, prereqs: string[], opts?: CompileOption
     commandLine += "--out " + name + " " + sources.join(" ");
 
     var jakeOptions: jake.FileTaskOptions = { async: true };
-    var task: jake.FileTask = file(name, prereqs, ()=> { executeTsc(name, [name], commandLine); }, jakeOptions);
+    var task: jake.FileTask = file(name, prereqs,
+        ()=>
+        {
+            executeTsc(name, [name], commandLine,
+                ()=>
+                {
+                    if (fs.existsSync(name))
+                    {
+                        fs.unlinkSync(name);
+                    }
+                });
+        }, jakeOptions);
 
     return task;
 }
@@ -182,15 +187,6 @@ export function batchFiles(name: string, prereqs: string[], opts?: BatchCompileO
 
     commandLine += sources.join(" ");
 
-    var jakeOptions: jake.FileTaskOptions = { async: true };
-    var batchCompileName: string = "batchCompile" + name;
-    var batchCompileTask: jake.Task;
-    namespace("jake-typescript", ()=>
-    {
-        desc("A task to do batch TypeScript compilation.");
-        batchCompileTask = task(batchCompileName, ()=> { executeTsc(name, sources, commandLine); }, jakeOptions);
-    });
-
     var builtFiles: string[] = [];
 
     sources.forEach((source: string): void=>
@@ -198,12 +194,35 @@ export function batchFiles(name: string, prereqs: string[], opts?: BatchCompileO
         if (!isTsDeclarationFile(source))
         {
             var builtFile: string = source.substr(0, source.length - 3) + ".js";
-            file(builtFile, prereqs, ()=>
+            file(builtFile, prereqs, () =>
             {
                 batchCompileTask.invoke();
             });
             builtFiles.push(builtFile);
         }
+    });
+
+    var jakeOptions: jake.FileTaskOptions = { async: true };
+    var batchCompileName: string = "batchCompile" + name;
+    var batchCompileTask: jake.Task;
+    namespace("jake-typescript", ()=>
+    {
+        desc("A task to do batch TypeScript compilation.");
+        batchCompileTask = task(batchCompileName,
+            ()=>
+            {
+                executeTsc(name, sources, commandLine,
+                    ()=>
+                    {
+                        builtFiles.forEach((outFile: string): void=>
+                        {
+                            if (fs.existsSync(outFile))
+                            {
+                                fs.unlinkSync(outFile);
+                            }
+                        });
+                    });
+            }, jakeOptions);
     });
 
     return task(name, builtFiles);
