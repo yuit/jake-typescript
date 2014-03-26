@@ -1,21 +1,19 @@
 /// <reference path="../typings/jake/jake.d.ts" />
 
 import fs = require("fs");
+import path = require("path");
 
-export enum ModuleKind
-{
+export enum ModuleKind {
     commonjs,
     amd
 }
 
-export enum ESVersion
-{
+export enum ESVersion {
     ES3,
     ES5
 }
 
-export interface CompileOptions
-{
+export interface CompileOptions {
     generateDeclarationFile?: boolean;
     moduleKind?: ModuleKind;
     noImplicitAny?: boolean;
@@ -26,123 +24,103 @@ export interface CompileOptions
     targetVersion?: ESVersion;
 }
 
-export interface BatchCompileOptions extends CompileOptions
-{
+export interface BatchCompileOptions extends CompileOptions {
     outputDirectory?: string;
 }
 
-function isTsDeclarationFile(value: string): boolean
-{
+function isTsDeclarationFile(value: string): boolean {
     return value.indexOf(".d.ts", value.length - 5) !== -1;
 }
 
-function isTsFile(value: string): boolean
-{
+function isTsFile(value: string): boolean {
     return value.indexOf(".ts", value.length - 3) !== -1;
 }
 
-function extractSources(prereqs: string[]): string[]
-{
-    return prereqs.filter((prereq: string): boolean=>
-    {
+function extractSources(prereqs: string[]): string[] {
+    return prereqs.filter((prereq: string): boolean=> {
         return isTsFile(prereq);
     });
 }
 
-function convertOptions(options: CompileOptions): string
-{
-    if (!options)
-    {
+function convertOptions(options: CompileOptions): string {
+    if (!options) {
         return "";
     }
 
     var optionString: string = "";
 
-    if (options.generateDeclarationFile)
-    {
+    if (options.generateDeclarationFile) {
         optionString += "--declaration ";
     }
 
-    switch (options.moduleKind)
-    {
-    case ModuleKind.amd:
-        optionString += "--module amd ";
-        break;
+    switch (options.moduleKind) {
+        case ModuleKind.amd:
+            optionString += "--module amd ";
+            break;
 
-    case ModuleKind.commonjs:
-        optionString += "--module commonjs ";
-        break;
+        case ModuleKind.commonjs:
+            optionString += "--module commonjs ";
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
 
-    if (options.noImplicitAny)
-    {
+    if (options.noImplicitAny) {
         optionString += "--noImplicitAny ";
     }
 
-    if (options.generateSourceMap)
-    {
+    if (options.generateSourceMap) {
         optionString += "--sourceMap ";
     }
 
-    if (options.mapRoot)
-    {
+    if (options.mapRoot) {
         optionString += "--mapRoot " + options.mapRoot + " ";
     }
 
-    if (options.removeComments)
-    {
+    if (options.removeComments) {
         optionString += "--removeComments ";
     }
 
-    if (options.sourceRoot)
-    {
+    if (options.sourceRoot) {
         optionString += "--sourceRoot " + options.sourceRoot + " ";
     }
 
-    switch (options.targetVersion)
-    {
-    case ESVersion.ES3:
-        optionString += "--target ES3 ";
-        break;
+    switch (options.targetVersion) {
+        case ESVersion.ES3:
+            optionString += "--target ES3 ";
+            break;
 
-    case ESVersion.ES5:
-        optionString += "--target ES5 ";
-        break;
+        case ESVersion.ES5:
+            optionString += "--target ES5 ";
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
 
     return optionString;
 }
 
-function executeTsc(name: string, outFiles: string[], commandLine: string, failure: () => void): void
-{
+function executeTsc(name: string, outFiles: string[], commandLine: string, failure: () => void): void {
     var cmd = "tsc " + commandLine;
     console.log(cmd + "\n");
 
     var ex: jake.Exec = jake.createExec([cmd]);
 
-    ex.addListener("stdout", (output: string) =>
-    {
+    ex.addListener("stdout", (output: string) => {
         process.stdout.write(output);
     });
 
-    ex.addListener("stderr", (error: string) =>
-    {
+    ex.addListener("stderr", (error: string) => {
         process.stderr.write(error);
     });
 
-    ex.addListener("cmdEnd", () =>
-    {
+    ex.addListener("cmdEnd", () => {
         complete();
     });
 
-    ex.addListener("error", () =>
-    {
+    ex.addListener("error", () => {
         failure();
         console.log("Compilation of " + name + " failed.");
     });
@@ -151,8 +129,7 @@ function executeTsc(name: string, outFiles: string[], commandLine: string, failu
 }
 
 // This compiles a set of TypeScript files into a single JavaScript file
-export function singleFile(name: string, prereqs: string[], opts?: CompileOptions): jake.FileTask
-{
+export function singleFile(name: string, prereqs: string[], opts?: CompileOptions): jake.FileTask {
     var sources: string[] = extractSources(prereqs);
     var commandLine: string = convertOptions(opts);
 
@@ -160,13 +137,10 @@ export function singleFile(name: string, prereqs: string[], opts?: CompileOption
 
     var jakeOptions: jake.FileTaskOptions = { async: true };
     var task: jake.FileTask = file(name, prereqs,
-        ()=>
-        {
+        () => {
             executeTsc(name, [name], commandLine,
-                ()=>
-                {
-                    if (fs.existsSync(name))
-                    {
+                () => {
+                    if (fs.existsSync(name)) {
                         fs.unlinkSync(name);
                     }
                 });
@@ -175,27 +149,22 @@ export function singleFile(name: string, prereqs: string[], opts?: CompileOption
     return task;
 }
 
-export function batchFiles(name: string, prereqs: string[], opts?: BatchCompileOptions): jake.Task
-{
+export function batchFiles(name: string, prereqs: string[], opts?: BatchCompileOptions): jake.Task {
     var sources: string[] = extractSources(prereqs);
     var commandLine: string = convertOptions(opts);
 
-    if (opts.outputDirectory)
-    {
-        commandLine += "--outDir " + opts.outputDirectory;
+    if (opts.outputDirectory) {
+        commandLine += "--outDir " + opts.outputDirectory + " ";
     }
 
     commandLine += sources.join(" ");
 
     var builtFiles: string[] = [];
 
-    sources.forEach((source: string): void=>
-    {
-        if (!isTsDeclarationFile(source))
-        {
-            var builtFile: string = source.substr(0, source.length - 3) + ".js";
-            file(builtFile, prereqs, () =>
-            {
+    sources.forEach((source: string): void=> {
+        if (!isTsDeclarationFile(source)) {
+            var builtFile: string = path.normalize((opts.outputDirectory || "./") + path.basename(source.substr(0, source.length - 3) + ".js"));
+            file(builtFile, prereqs, () => {
                 batchCompileTask.invoke();
             });
             builtFiles.push(builtFile);
@@ -205,19 +174,14 @@ export function batchFiles(name: string, prereqs: string[], opts?: BatchCompileO
     var jakeOptions: jake.FileTaskOptions = { async: true };
     var batchCompileName: string = "batchCompile" + name;
     var batchCompileTask: jake.Task;
-    namespace("jake-typescript", ()=>
-    {
+    namespace("jake-typescript", () => {
         desc("A task to do batch TypeScript compilation.");
         batchCompileTask = task(batchCompileName,
-            ()=>
-            {
+            () => {
                 executeTsc(name, sources, commandLine,
-                    ()=>
-                    {
-                        builtFiles.forEach((outFile: string): void=>
-                        {
-                            if (fs.existsSync(outFile))
-                            {
+                    () => {
+                        builtFiles.forEach((outFile: string): void=> {
+                            if (fs.existsSync(outFile)) {
                                 fs.unlinkSync(outFile);
                             }
                         });
