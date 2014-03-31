@@ -31,6 +31,8 @@ declare module "jake-typescript"
         outputDirectory?: string;
     }
 
+    export function isTsDeclarationFile(filename: string): boolean;
+    export function isTsFile(filename: string): boolean;
     export function singleFile(name: string, prereqs: string[], opts?: CompileOptions): jake.FileTask;
     export function batchFiles(name: string, prereqs: string[], opts?: BatchCompileOptions): jake.Task;
 }

@@ -28,15 +28,20 @@ export interface BatchCompileOptions extends CompileOptions {
     outputDirectory?: string;
 }
 
-function isTsDeclarationFile(value: string): boolean {
-    return value.indexOf(".d.ts", value.length - 5) !== -1;
+export function isTsDeclarationFile(filename: string): boolean {
+    return filename.indexOf(".d.ts", filename.length - 5) !== -1;
 }
 
-function isTsFile(value: string): boolean {
-    return value.indexOf(".ts", value.length - 3) !== -1;
+export function isTsFile(filename: string): boolean {
+    return filename.indexOf(".ts", filename.length - 3) !== -1;
 }
 
-function extractSources(prereqs: string[]): string[] {
+var switchToForwardSlashesRegEx = /\\/g;
+function switchToForwardSlashes(path: string) {
+    return path.replace(switchToForwardSlashesRegEx, "/");
+}
+
+function extractSources(prereqs: string[]): string[]{
     return prereqs.filter((prereq: string): boolean=> {
         return isTsFile(prereq);
     });
@@ -164,6 +169,8 @@ export function batchFiles(name: string, prereqs: string[], opts?: BatchCompileO
     sources.forEach((source: string): void=> {
         if (!isTsDeclarationFile(source)) {
             var builtFile: string = path.normalize((opts.outputDirectory || "./") + path.basename(source.substr(0, source.length - 3) + ".js"));
+            // On Windows, normalize will use backslashes, which will mess up jake's matching
+            builtFile = switchToForwardSlashes(builtFile);
             file(builtFile, prereqs, () => {
                 batchCompileTask.invoke();
             });
