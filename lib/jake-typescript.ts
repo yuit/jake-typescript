@@ -168,7 +168,7 @@ export function batchFiles(name: string, prereqs: string[], opts?: BatchCompileO
 
     sources.forEach((source: string): void=> {
         if (!isTsDeclarationFile(source)) {
-            var builtFile: string = path.normalize((opts.outputDirectory || "./") + path.basename(source.substr(0, source.length - 3) + ".js"));
+            var builtFile: string = path.normalize((opts.outputDirectory || "./") + source.substr(0, source.length - 3) + ".js");
             // On Windows, normalize will use backslashes, which will mess up jake's matching
             builtFile = switchToForwardSlashes(builtFile);
             file(builtFile, prereqs, () => {
